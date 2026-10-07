@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>2048</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>2048</h1>
+    <div class="scores">
+      <div class="score-box">
+        <div class="label">分数</div>
+        <div class="value" id="score">0</div>
+      </div>
+      <div class="score-box">
+        <div class="label">最高分</div>
+        <div class="value" id="best">0</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="hint">合并相同的数字,拼出 <strong>2048</strong>!</div>
+
+  <div class="board" id="board"></div>
+
+  <div class="controls">
+    <button id="newGame">新游戏</button>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="overlay-box">
+      <div class="overlay-title" id="overlayTitle"></div>
+      <div class="overlay-text" id="overlayText"></div>
+      <button id="overlayBtn">再来一局</button>
+    </div>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
