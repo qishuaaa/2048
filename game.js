@@ -14,6 +14,33 @@
   const overlayText = document.getElementById('overlayText');
   const overlayBtn = document.getElementById('overlayBtn');
 
+  // ---- 图片自定义 ----
+  const VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
+  const STORAGE_KEY = 'tileImages2048';
+  let tileImages = loadImages();
+
+  function loadImages() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveImages() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tileImages));
+    } catch (e) {
+      alert('图片太多或太大,无法保存(浏览器存储已满)。请换小一点的图片。');
+    }
+  }
+
+  function clearImages() {
+    tileImages = {};
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  }
+
   best = parseInt(localStorage.getItem('best2048') || '0', 10);
   bestEl.textContent = best;
 
@@ -40,9 +67,19 @@
         const v = grid[r][c];
         if (v !== 0) {
           const tile = document.createElement('div');
-          const cls = v <= 2048 ? 't' + v : 'tsuper';
-          tile.className = 'tile ' + cls;
-          tile.textContent = v;
+          const img = tileImages[v];
+          if (img) {
+            tile.className = 'tile has-img';
+            tile.style.backgroundImage = 'url(' + img + ')';
+            const num = document.createElement('span');
+            num.className = 'tile-num';
+            num.textContent = v;
+            tile.appendChild(num);
+          } else {
+            const cls = v <= 2048 ? 't' + v : 'tsuper';
+            tile.className = 'tile ' + cls;
+            tile.textContent = v;
+          }
           tile.style.position = 'absolute';
           tile.style.inset = '0';
           cell.appendChild(tile);
@@ -227,6 +264,82 @@
   });
 
   document.getElementById('newGame').addEventListener('click', newGame);
+
+  // ---- 图片自定义 UI ----
+  const uploader = document.getElementById('uploader');
+  const uploaderList = document.getElementById('uploaderList');
+  const fileInput = document.getElementById('fileInput');
+
+  function renderSlots() {
+    uploaderList.innerHTML = '';
+    VALUES.forEach((v) => {
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      const img = tileImages[v];
+      if (img) {
+        const imEl = document.createElement('img');
+        imEl.src = img;
+        slot.appendChild(imEl);
+      } else {
+        const emptyEl = document.createElement('span');
+        emptyEl.className = 'slot-empty';
+        emptyEl.textContent = '空';
+        slot.appendChild(emptyEl);
+      }
+      const numLab = document.createElement('span');
+      numLab.className = 'slot-num';
+      numLab.textContent = v;
+      slot.appendChild(numLab);
+      uploaderList.appendChild(slot);
+    });
+  }
+
+  function handleFiles(files) {
+    const imgFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (imgFiles.length === 0) return;
+    let idx = 0;
+    VALUES.forEach((v) => {
+      if (idx >= imgFiles.length) return;
+      if (!tileImages[v]) {
+        const f = imgFiles[idx];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          tileImages[v] = e.target.result;
+          saveImages();
+          renderSlots();
+          render();
+        };
+        reader.readAsDataURL(f);
+        idx++;
+      }
+    });
+  }
+
+  document.getElementById('customize').addEventListener('click', () => {
+    uploader.classList.remove('hidden');
+    renderSlots();
+  });
+
+  document.getElementById('closeUploader').addEventListener('click', () => {
+    uploader.classList.add('hidden');
+  });
+
+  document.getElementById('uploadBtn').addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+    e.target.value = '';
+  });
+
+  document.getElementById('resetImg').addEventListener('click', () => {
+    if (confirm('确定恢复默认配色并清除所有自定义图片吗?')) {
+      clearImages();
+      renderSlots();
+      render();
+    }
+  });
 
   newGame();
 })();

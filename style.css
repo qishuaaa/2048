@@ -104,6 +104,8 @@ h1 {
   margin-top: 16px;
   display: flex;
   justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 button {
@@ -111,7 +113,7 @@ button {
   color: #f9f6f2;
   border: none;
   border-radius: 6px;
-  padding: 12px 28px;
+  padding: 12px 22px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
@@ -119,6 +121,109 @@ button {
 }
 
 button:active { background: #7a6748; }
+button.secondary { background: #bbada0; }
+button.secondary:active { background: #a09282; }
+
+/* 上传面板 */
+.hidden { display: none !important; }
+
+.uploader {
+  margin-top: 14px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+}
+
+.uploader-box { text-align: center; }
+
+.uploader-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #776e65;
+  margin-bottom: 8px;
+}
+
+.uploader-text {
+  font-size: 13px;
+  color: #998d80;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.uploader-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.slot {
+  aspect-ratio: 1;
+  border: 2px dashed #d0c5b8;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  background: #faf8ef;
+}
+
+.slot .slot-num {
+  font-size: 12px;
+  color: #a09282;
+  font-weight: bold;
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  z-index: 2;
+  background: rgba(255,255,255,0.8);
+  border-radius: 3px;
+  padding: 0 3px;
+}
+
+.slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.slot .slot-empty {
+  font-size: 11px;
+  color: #c0b5a8;
+}
+
+.uploader-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 数字浮层(图片模式下仍显示数字) */
+.tile .tile-num {
+  position: absolute;
+  bottom: 3px;
+  right: 5px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.45);
+  border-radius: 3px;
+  padding: 0 4px;
+  line-height: 1.3;
+}
+
+.tile.has-img {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
 .overlay {
   position: fixed;

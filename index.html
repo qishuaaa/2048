@@ -28,7 +28,23 @@
 
   <div class="controls">
     <button id="newGame">新游戏</button>
+    <button id="customize" class="secondary">📷 自定义图片</button>
   </div>
+
+  <div class="uploader hidden" id="uploader">
+    <div class="uploader-box">
+      <div class="uploader-title">上传自定义图片</div>
+      <div class="uploader-text">按顺序上传 2 → 4 → 8 → 16 → 32 → 64 → 128 → 256 → 512 → 1024 → 2048 共 11 张图片</div>
+      <div class="uploader-list" id="uploaderList"></div>
+      <div class="uploader-actions">
+        <button id="uploadBtn" class="secondary">选择图片</button>
+        <button id="resetImg" class="secondary">恢复默认配色</button>
+        <button id="closeUploader" class="secondary">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" accept="image/*" multiple hidden>
 
   <div class="overlay" id="overlay">
     <div class="overlay-box">
