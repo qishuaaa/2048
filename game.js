@@ -14,6 +14,62 @@
   const overlayText = document.getElementById('overlayText');
   const overlayBtn = document.getElementById('overlayBtn');
 
+  // ---- 音效 ----
+  let audioCtx = null;
+  let soundOn = true;
+
+  function getAudioCtx() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { audioCtx = null; }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function playMergeSound(value) {
+    if (!soundOn) return;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const base = 220 + Math.log2(value) * 40;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(base, ctx.currentTime);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.2);
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(base * 2, ctx.currentTime);
+    gain2.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(ctx.currentTime);
+    osc2.stop(ctx.currentTime + 0.12);
+  }
+
+  function playMoveSound() {
+    if (!soundOn) return;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(180, ctx.currentTime);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.08);
+  }
+
   // ---- 图片自定义 ----
   const VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
   const STORAGE_KEY = 'tileImages2048';
@@ -95,26 +151,26 @@
     const arr = row.filter(v => v !== 0);
     const result = [];
     let gained = 0;
-    let merged = false;
+    let maxMerged = 0;
     for (let i = 0; i < arr.length; i++) {
       if (i + 1 < arr.length && arr[i] === arr[i + 1]) {
         const v = arr[i] * 2;
         result.push(v);
         gained += v;
+        if (v > maxMerged) maxMerged = v;
         i++;
-        merged = true;
       } else {
         result.push(arr[i]);
       }
     }
     while (result.length < SIZE) result.push(0);
-    return { row: result, gained, merged };
+    return { row: result, gained, maxMerged };
   }
 
   function move(direction) {
     let moved = false;
     let totalGained = 0;
-    let anyMerged = false;
+    let maxMerged = 0;
 
     const rotate = (g) => {
       const ng = emptyGrid();
@@ -137,7 +193,7 @@
       const sl = slideRow(g[r]);
       result.push(direction === 'right' ? sl.row.slice().reverse() : sl.row);
       totalGained += sl.gained;
-      if (sl.gained > 0) anyMerged = true;
+      if (sl.maxMerged > maxMerged) maxMerged = sl.maxMerged;
     }
 
     // 变换回原方向
@@ -161,7 +217,7 @@
       for (let c = 0; c < SIZE; c++)
         if (newGrid[r][c] !== grid[r][c]) moved = true;
 
-    if (!moved) return false;
+    if (!moved) return { moved: false, maxMerged: 0 };
 
     grid = newGrid;
     score += totalGained;
@@ -169,7 +225,7 @@
       best = score;
       localStorage.setItem('best2048', best);
     }
-    return true;
+    return { moved: true, maxMerged };
   }
 
   function canMove() {
@@ -207,8 +263,10 @@
 
   function step(direction) {
     if (gameOver && !won) return;
-    const moved = move(direction);
-    if (moved) {
+    const res = move(direction);
+    if (res.moved) {
+      if (res.maxMerged > 0) playMergeSound(res.maxMerged);
+      else playMoveSound();
       addRandomTile();
       render();
       checkState();
@@ -264,6 +322,20 @@
   });
 
   document.getElementById('newGame').addEventListener('click', newGame);
+
+  // ---- 音效开关 ----
+  const soundToggle = document.getElementById('soundToggle');
+  soundToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundToggle.textContent = soundOn ? '🔊 音效:开' : '🔇 音效:关';
+    if (soundOn) getAudioCtx(); // 解锁 AudioContext
+  });
+
+  // 首次交互时解锁音频
+  document.addEventListener('pointerdown', function unlockAudio() {
+    getAudioCtx();
+    document.removeEventListener('pointerdown', unlockAudio);
+  }, { once: false });
 
   // ---- 图片自定义 UI ----
   const uploader = document.getElementById('uploader');
